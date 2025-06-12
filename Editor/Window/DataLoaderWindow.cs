@@ -8,6 +8,7 @@ using UnityEngine;
 
 using DataEngine.Data;
 using DataEngine.Window;
+using static PlasticPipe.Server.MonitorStats;
 
 namespace DataEditor.Window
 {
@@ -51,7 +52,49 @@ namespace DataEditor.Window
             m_loaders = FindObjectsOfType<ObjectLoader>(true);
             m_libraryTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Library/PackageCache/com.fms.core/Assets/Icons/save.png");
             m_libraryTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Packages/com.fms.core/Assets/Icons/save.png");
+
+            if (EditorPrefs.HasKey("DataLoader.encryption"))
+            {
+                DataLoader.encryption = EditorPrefs.GetBool("DataLoader.encryption");
+            }
+            if (EditorPrefs.HasKey("DataLoader.autoSave"))
+            {
+                DataLoader.autoSave = EditorPrefs.GetBool("DataLoader.autoSave");
+            }
+            if (EditorPrefs.HasKey("DataLoader.key"))
+            {
+                DataLoader.key = EditorPrefs.GetString("DataLoader.key");
+            }
+            if (EditorPrefs.HasKey("DataLoader.keySize"))
+            {
+                m_keySizeFactor = EditorPrefs.GetInt("DataLoader.keySize");
+            }
+            if (EditorPrefs.HasKey("DataLoader.pathType"))
+            {
+                DataLoader.pathType = (DataLoader.DataLoaderPath)EditorPrefs.GetInt("DataLoader.pathType");
+            }
+            if (EditorPrefs.HasKey("DataLoader.path"))
+            {
+                DataLoader.path = EditorPrefs.GetString("DataLoader.path");
+            }
+            if (EditorPrefs.HasKey("DataLoader.currentPath"))
+            {
+                DataLoader.path = EditorPrefs.GetString("DataLoader.currentPath");
+            }
         }
+
+        private void OnDisable()
+        {
+            EditorPrefs.SetInt("DataLoader.pathType", (int)DataLoader.pathType);
+            EditorPrefs.SetInt("DataLoader.keySize", m_keySizeFactor);
+            EditorPrefs.SetString("DataLoader.path", DataLoader.path);
+            EditorPrefs.SetString("DataLoader.key", DataLoader.key);
+            EditorPrefs.SetBool("DataLoader.encryption", DataLoader.encryption);
+            EditorPrefs.SetBool("DataLoader.autoSave", DataLoader.autoSave);
+            EditorPrefs.SetString("DataLoader.currentPath", DataLoader.currentPath);
+        }
+
+        private Color oldColor = Color.white;
 
         private void OnGUI()
         {
@@ -122,19 +165,29 @@ namespace DataEditor.Window
 
             foreach (var loader in m_loaders)
             {
+                if(!loader) { continue; }
+
                 EditorGUILayout.BeginHorizontal();
                 content = new GUIContent(m_localTexture != null ? m_localTexture : m_libraryTexture);
                 EditorGUILayout.LabelField(content, GUILayout.MaxWidth(20));
                 EditorGUILayout.LabelField(loader.name);
-                if (GUILayout.Button("Select")){
+                if (GUILayout.Button("Select", GUILayout.MaxWidth(80))){
                     Selection.activeObject = loader;
                     EditorGUIUtility.PingObject(loader);
                 }
-
-                if (GUILayout.Button("Delete"))
+                GUI.color = Color.red;
+                if (GUILayout.Button("Delete", GUILayout.MaxWidth(80)))
                 {
-                    loader.Delete();
+                    if (loader.Delete())
+                    {
+                        ModalPopupWindow.ShowPopup("Deleted File");
+                    }
+                    else
+                    {
+                        ModalPopupWindow.ShowPopup("Falied To Delete File");
+                    }
                 }
+                GUI.color = Color.white;
                 EditorGUILayout.EndHorizontal();
             }
             EditorGUILayout.EndScrollView();

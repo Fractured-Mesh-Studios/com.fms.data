@@ -6,17 +6,14 @@ using DataEngine.Data;
 using System.Linq;
 using System.Reflection;
 using DataEditor.Procedural;
+using DataEditor.Window;
 
 namespace DataEditor.Data
 {
     [CustomEditor(typeof(ObjectLoader))]
     public class ObjectLoaderEditor : Editor
     {
-        private const int MIN_BTN_WIDTH = 100; //NOT USED
-        private const int MAX_BTN_WIDTH = 200;
-
         private static PersistentUniqueGenerator s_generator = new PersistentUniqueGenerator();
-        private static long s_lastGenerated;
 
         private static void OnEditorQuit()
         {
@@ -37,8 +34,8 @@ namespace DataEditor.Data
 
         public override void OnInspectorGUI()
         {
-            DrawDefaultInspector();
             KeyInspector();
+            DrawDefaultInspector();
             if(m_target.components.Where(x => x.GetType() == typeof(ObjectLoader)).Any())
             {
                 EditorGUILayout.HelpBox("No Self Container Allowed", MessageType.Error);
@@ -80,7 +77,6 @@ namespace DataEditor.Data
             {
                 m_target.id = s_generator.GenerateValue();
                 m_isGeneratedId = true;
-                s_lastGenerated = m_target.id;
             }
 
             if (GUILayout.Button("[-]", GUILayout.MaxWidth(35))) 
@@ -126,7 +122,10 @@ namespace DataEditor.Data
             }
             if (GUILayout.Button("Delete"))
             {
-                m_target.Delete();
+                if(m_target.Delete())
+                    ModalPopupWindow.ShowPopup("File Deleted");
+                else
+                    ModalPopupWindow.ShowPopup("Falied To Delete File");
             }
             EditorGUILayout.EndHorizontal();
         }

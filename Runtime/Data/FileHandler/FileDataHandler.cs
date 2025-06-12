@@ -201,15 +201,20 @@ namespace DataEngine.Data
         public bool DeleteFile()
         {
             string fullPath = Path.Combine(m_path, m_filename);
-            if (File.Exists(fullPath))
+            try
             {
-                File.Delete(fullPath);
-                return true;
+                if (File.Exists(fullPath))
+                {
+                    File.Delete(fullPath);
+                    return true;
+                }
             }
-            else
+            catch (FileNotFoundException e) 
             {
-                throw new FileNotFoundException(null, fullPath);
+                throw e;
             }
+
+            return false;
         }
         #endregion
 

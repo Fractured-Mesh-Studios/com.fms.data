@@ -30,8 +30,8 @@ namespace DataEngine.Data
         [HideInInspector] public string fileName = string.Empty;
         [HideInInspector] public LoadMode mode = LoadMode.UseId;
 
-
-        [HideInInspector] public List<Component> components = new List<Component>();
+        [Header("Settings")]
+        public List<Component> components = new List<Component>();
 
         private FileDataHandler m_file = null;
         private SerializedData m_data = new SerializedData();
