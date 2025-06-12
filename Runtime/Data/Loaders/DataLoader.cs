@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 using System;
+using DataEngine.Data.Serializer;
+using Newtonsoft.Json.Linq;
 
 namespace DataEngine.Data
 {
@@ -81,9 +83,19 @@ namespace DataEngine.Data
             {
                 g_data = g_file.Load<SerializedData>(encryption);
 
-                var data = g_data.Where(x => x.Key == key);
+                var kvp = g_data.FirstOrDefault(x => x.Key == key);
 
-                return (T)data.FirstOrDefault().Value;
+                object value = IsJToken<T>(kvp.Value);
+
+                try
+                {
+                    return (T)value;
+                }
+                catch(InvalidCastException e)
+                {
+                    Debug.LogError($"Failed to cast value with key '{key}' to type <b>{typeof(T)}</b>: {e.Message}");
+                    return default;
+                }
             }
             else
             {
@@ -263,6 +275,25 @@ namespace DataEngine.Data
             {
                 g_file.Save(g_data, encryption);
             }
+        }
+
+        private static T IsJToken<T>(object data)
+        {
+            var serializer = new JsonSerializer();
+
+            if (data is JToken token)
+            {
+                if (token.Type == JTokenType.String)
+                {
+                    return serializer.Deserialize<T>(data.ToString());
+                }
+                else
+                {
+                    return token.ToObject<T>();
+                }
+            }
+
+            return (T)data;
         }
         #endregion
     }

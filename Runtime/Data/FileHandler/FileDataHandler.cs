@@ -3,6 +3,7 @@ using System.IO;
 using UnityEngine;
 using DataEngine.Interfaces;
 using DataEngine.Data.Serializer;
+using Newtonsoft.Json.Linq;
 
 namespace DataEngine.Data
 {
@@ -48,7 +49,22 @@ namespace DataEngine.Data
                     string dataToLoad = String.Empty;
                     if (encrypted) 
                     {
-                        loadedData = ReadEncryptedData<T>(fullPath);
+                        var preloadData = ReadEncryptedData<T>(fullPath);
+
+                        if (preloadData is JObject jObject)
+                        {
+                            return jObject.ToObject<T>();
+                        }
+
+                        try
+                        {
+                            return (T)Convert.ChangeType(preloadData, typeof(T));
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.LogError($"Error casting primitive value: {e.Message}");
+                            return default;
+                        }
                     } 
                     else
                     { 
@@ -59,7 +75,22 @@ namespace DataEngine.Data
                                 dataToLoad = Reader.ReadToEnd();
                             }
                         
-                            loadedData = m_serializer.Deserialize<T>(dataToLoad);
+                            var preloadData = m_serializer.Deserialize<T>(dataToLoad);
+
+                            if (preloadData is JObject jObject)
+                            {
+                                return jObject.ToObject<T>();
+                            }
+
+                            try
+                            {
+                                return (T)Convert.ChangeType(preloadData, typeof(T));
+                            }
+                            catch (Exception e)
+                            {
+                                Debug.LogError($"Error casting primitive value: {e.Message}");
+                                return default;
+                            }
                         }
                     }
                 } catch (Exception e) {
