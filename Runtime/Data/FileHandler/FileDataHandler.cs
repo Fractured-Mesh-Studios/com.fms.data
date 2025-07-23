@@ -14,6 +14,9 @@ namespace DataEngine.Data
         private string m_key;
         private ISerialization m_serializer;
 
+        private FileAccess access;
+        private FileShare share;
+
         public FileDataHandler(string path, string name)
         {
             m_path = path;
@@ -35,6 +38,12 @@ namespace DataEngine.Data
             m_filename = name;
             m_key = key;
             m_serializer = serializer;
+        }
+
+        public void SetThreadLock(bool locked)
+        {
+            share = locked ? FileShare.Read : FileShare.ReadWrite;
+            access = locked ? FileAccess.Read : FileAccess.ReadWrite;
         }
 
         #region LOAD
@@ -68,7 +77,7 @@ namespace DataEngine.Data
                     } 
                     else
                     { 
-                        using (FileStream FileStream = new FileStream(fullPath, FileMode.Open))
+                        using (FileStream FileStream = new FileStream(fullPath, FileMode.Open, access, share))
                         {
                             using (StreamReader Reader = new StreamReader(FileStream))
                             {
@@ -113,7 +122,7 @@ namespace DataEngine.Data
             {
                 try
                 {
-                    using (FileStream FileStream = new FileStream(fullPath, FileMode.Open))
+                    using (FileStream FileStream = new FileStream(fullPath, FileMode.Open, access, share))
                     {
                         using (StreamReader Reader = new StreamReader(FileStream))
                         {
@@ -141,7 +150,7 @@ namespace DataEngine.Data
             
                 string dataToStore = m_serializer.Serialize(data);
 
-                using (FileStream fs = new FileStream(fullPath, FileMode.Create))
+                using (FileStream fs = new FileStream(fullPath, FileMode.Create, access, share))
                 {
                     if(encrypted)
                     {
@@ -168,7 +177,7 @@ namespace DataEngine.Data
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(fullPath));
 
-                using (FileStream fs = new FileStream(fullPath, FileMode.Create))
+                using (FileStream fs = new FileStream(fullPath, FileMode.Create, access, share))
                 {
                     using (StreamWriter writer = new StreamWriter(fs))
                     {

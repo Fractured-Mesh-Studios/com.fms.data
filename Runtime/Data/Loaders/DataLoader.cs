@@ -6,6 +6,7 @@ using System.IO;
 using System;
 using DataEngine.Data.Serializer;
 using Newtonsoft.Json.Linq;
+using System.Threading;
 
 namespace DataEngine.Data
 {
@@ -48,7 +49,28 @@ namespace DataEngine.Data
         private static FileDataHandler g_file;
         private static string g_path;
 
-        public static void Initialize(string filename, string extension = "data")
+        public static void Initialize(string filename, bool threadLock = true)
+        {
+            string path = string.Empty;
+            switch (pathType)
+            {
+                case DataLoaderPath.Root: path = Environment.CurrentDirectory; break;
+                case DataLoaderPath.Assets: path = Application.dataPath; break;
+                case DataLoaderPath.Custom: path = DataLoader.path; break;
+                case DataLoaderPath.Default: path = Application.consoleLogPath; break;
+                case DataLoaderPath.Persistent: path = Application.persistentDataPath; break;
+                default: break;
+            }
+
+            string name = $"{filename}.json";
+
+            g_path = path;
+            g_file = new FileDataHandler(path, name, key);
+            g_file.SetThreadLock(threadLock);
+            g_data.Clear();
+        }
+
+        public static void Initialize(string filename, string extension, bool threadLock = true)
         {
             string path = string.Empty;
             switch (pathType)
@@ -65,14 +87,19 @@ namespace DataEngine.Data
 
             g_path = path;
             g_file = new FileDataHandler(path, name, key);
+            g_file.SetThreadLock(threadLock);
             g_data.Clear();
         }
 
-        public static void Initialize(string filename, string path, string extension = "data")
+        public static void InitializePath(string path, bool threadLock = true)
         {
-            string name = $"{filename}.{extension}";
+            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(path);
+            string fileExtension = Path.GetExtension(path);
+            string name = $"{fileNameWithoutExtension}.{fileExtension}";
+
             g_path = path;
             g_file = new FileDataHandler(path, name, key);
+            g_file.SetThreadLock(threadLock);
             g_data.Clear();
         }
 

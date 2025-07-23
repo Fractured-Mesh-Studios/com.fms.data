@@ -1,6 +1,6 @@
 {
   "name": "com.fms.data",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "displayName": "Data",
   "description": "Author: Jorge Nauel Gerones.\n\nThis plugin is a serializer and a save & load system",
   "unity": "2021.1",
