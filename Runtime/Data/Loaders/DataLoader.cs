@@ -1,12 +1,11 @@
+using System;
+using System.IO;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.IO;
-using System;
 using DataEngine.Data.Serializer;
 using Newtonsoft.Json.Linq;
-using System.Threading;
 
 namespace DataEngine.Data
 {
@@ -26,6 +25,8 @@ namespace DataEngine.Data
         public static string path = Application.dataPath + "/Data";
         public static string key = AesOperation.KEY;
         public static bool encryption = false;
+
+        public static event EventHandler OnFileFinishWrite; 
         
         //properties
         public static string currentPath { 
@@ -47,7 +48,10 @@ namespace DataEngine.Data
         private class SerializedData : Dictionary<string, object> { }
         private static SerializedData g_data = new SerializedData();
         private static FileDataHandler g_file;
+        private static FileMonitor g_monitor;
+
         private static string g_path;
+
 
         public static void Initialize(string filename, bool threadLock = true)
         {
@@ -68,6 +72,15 @@ namespace DataEngine.Data
             g_file = new FileDataHandler(path, name, key);
             g_file.SetThreadLock(threadLock);
             g_data.Clear();
+
+            if (g_monitor != null)
+            {
+                g_monitor.FileFinishedWriting -= OnFileFinishWrite;
+                g_monitor.StopMonitoring();
+            }
+
+            g_monitor = new FileMonitor(path, name);
+            g_monitor.FileFinishedWriting += OnFileFinishWrite;
         }
 
         public static void Initialize(string filename, string extension, bool threadLock = true)
@@ -89,6 +102,15 @@ namespace DataEngine.Data
             g_file = new FileDataHandler(path, name, key);
             g_file.SetThreadLock(threadLock);
             g_data.Clear();
+
+            if (g_monitor != null)
+            {
+                g_monitor.FileFinishedWriting -= OnFileFinishWrite;
+                g_monitor.StopMonitoring();
+            }
+
+            g_monitor = new FileMonitor(path, name);
+            g_monitor.FileFinishedWriting += OnFileFinishWrite;
         }
 
         public static void InitializePath(string path, bool threadLock = true)
@@ -101,6 +123,15 @@ namespace DataEngine.Data
             g_file = new FileDataHandler(path, name, key);
             g_file.SetThreadLock(threadLock);
             g_data.Clear();
+
+            if (g_monitor != null)
+            {
+                g_monitor.FileFinishedWriting -= OnFileFinishWrite;
+                g_monitor.StopMonitoring();
+            }
+
+            g_monitor = new FileMonitor(path, name);
+            g_monitor.FileFinishedWriting += OnFileFinishWrite;
         }
 
         #region LOAD

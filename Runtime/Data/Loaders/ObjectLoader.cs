@@ -8,9 +8,11 @@ using UnityEngine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.IO;
+using UnityEngine.Events;
 
 namespace DataEngine.Data
 {
+    [ExecuteInEditMode]
     public class ObjectLoader : MonoBehaviour
     {
         public enum LoadMode
@@ -31,11 +33,39 @@ namespace DataEngine.Data
         [HideInInspector] public LoadMode mode = LoadMode.UseId;
         [HideInInspector] public bool threadLock = true;
 
+        [Header("Events")]
+        public UnityEvent<object, EventArgs> OnFileFinishWrite = new UnityEvent<object, EventArgs>();
+
+        private void OnEnable()
+        {
+            if (m_monitor != null)
+            {
+                m_monitor.FileFinishedWriting += OnFileFinishWrite.Invoke;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (m_monitor != null)
+            {
+                m_monitor.FileFinishedWriting -= OnFileFinishWrite.Invoke;
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if(m_monitor != null) 
+            {
+                m_monitor.StopMonitoring();
+            }
+        }
+
         [Header("Settings")]
         public List<Component> components = new List<Component>();
 
         private FileDataHandler m_file = null;
         private SerializedData m_data = new SerializedData();
+        private FileMonitor m_monitor;
 
         public void Load()
         {
@@ -90,6 +120,11 @@ namespace DataEngine.Data
             m_file = new FileDataHandler(path + folder, name, m_key);
             m_data = new SerializedData();
             m_file.SetThreadLock(threadLock);
+
+            if (m_file.Exists())
+            {
+                m_monitor = new FileMonitor(path + folder, name);
+            }
         }
 
         private void OnLoad()
