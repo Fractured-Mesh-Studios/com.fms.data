@@ -29,6 +29,7 @@ namespace DataEngine.Data
         [HideInInspector] public string folder = "Save";
         [HideInInspector] public string fileName = string.Empty;
         [HideInInspector] public LoadMode mode = LoadMode.UseId;
+        [HideInInspector] public bool threadLock = true;
 
         [Header("Settings")]
         public List<Component> components = new List<Component>();
@@ -88,6 +89,7 @@ namespace DataEngine.Data
             
             m_file = new FileDataHandler(path + folder, name, m_key);
             m_data = new SerializedData();
+            m_file.SetThreadLock(threadLock);
         }
 
         private void OnLoad()

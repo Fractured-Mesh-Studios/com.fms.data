@@ -13,9 +13,8 @@ namespace DataEngine.Data
         private string m_filename;
         private string m_key;
         private ISerialization m_serializer;
-
-        private FileAccess access;
         private FileShare share;
+
 
         public FileDataHandler(string path, string name)
         {
@@ -43,7 +42,6 @@ namespace DataEngine.Data
         public void SetThreadLock(bool locked)
         {
             share = locked ? FileShare.Read : FileShare.ReadWrite;
-            access = locked ? FileAccess.Read : FileAccess.ReadWrite;
         }
 
         #region LOAD
@@ -77,7 +75,7 @@ namespace DataEngine.Data
                     } 
                     else
                     { 
-                        using (FileStream FileStream = new FileStream(fullPath, FileMode.Open, access, share))
+                        using (FileStream FileStream = new FileStream(fullPath, FileMode.Open, FileAccess.ReadWrite, share))
                         {
                             using (StreamReader Reader = new StreamReader(FileStream))
                             {
@@ -122,7 +120,7 @@ namespace DataEngine.Data
             {
                 try
                 {
-                    using (FileStream FileStream = new FileStream(fullPath, FileMode.Open, access, share))
+                    using (FileStream FileStream = new FileStream(fullPath, FileMode.Open, FileAccess.ReadWrite, share))
                     {
                         using (StreamReader Reader = new StreamReader(FileStream))
                         {
@@ -150,7 +148,7 @@ namespace DataEngine.Data
             
                 string dataToStore = m_serializer.Serialize(data);
 
-                using (FileStream fs = new FileStream(fullPath, FileMode.Create, access, share))
+                using (FileStream fs = new FileStream(fullPath, FileMode.Create, FileAccess.ReadWrite, share))
                 {
                     if(encrypted)
                     {
@@ -165,7 +163,9 @@ namespace DataEngine.Data
                     }
                 }
 
-            } catch(Exception e) {
+            } 
+            catch(Exception e) 
+            {
                 Debug.LogException(e);
             }
         }
@@ -177,7 +177,7 @@ namespace DataEngine.Data
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(fullPath));
 
-                using (FileStream fs = new FileStream(fullPath, FileMode.Create, access, share))
+                using (FileStream fs = new FileStream(fullPath, FileMode.Create, FileAccess.ReadWrite, share))
                 {
                     using (StreamWriter writer = new StreamWriter(fs))
                     {

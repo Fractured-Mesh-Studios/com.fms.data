@@ -47,8 +47,11 @@ namespace DataEditor.Data
                 IdInspector();
             }
             EditorGUILayout.PropertyField(serializedObject.FindProperty("encryption"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("threadLock"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("folder"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("fileName"));
+            
+            GUILayout.Space(10);
             LoadSaveInspector();
             ConfigInspector();
 
