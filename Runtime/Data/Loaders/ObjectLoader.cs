@@ -36,6 +36,13 @@ namespace DataEngine.Data
         [Header("Events")]
         public UnityEvent<object, EventArgs> OnFileFinishWrite = new UnityEvent<object, EventArgs>();
 
+        [Header("Settings")]
+        public List<Component> components = new List<Component>();
+
+        private FileDataHandler m_file = null;
+        private SerializedData m_data = new SerializedData();
+        private FileMonitor m_monitor;
+        
         private void OnEnable()
         {
             if (m_monitor != null)
@@ -59,13 +66,6 @@ namespace DataEngine.Data
                 m_monitor.StopMonitoring();
             }
         }
-
-        [Header("Settings")]
-        public List<Component> components = new List<Component>();
-
-        private FileDataHandler m_file = null;
-        private SerializedData m_data = new SerializedData();
-        private FileMonitor m_monitor;
 
         public void Load()
         {
