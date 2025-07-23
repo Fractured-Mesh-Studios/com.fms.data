@@ -44,6 +44,12 @@ namespace DataEngine.Data
             share = locked ? FileShare.Read : FileShare.ReadWrite;
         }
 
+        public bool Exists()
+        {
+            string fullPath = Path.Combine(m_path, m_filename);
+            return File.Exists(fullPath);
+        }
+
         #region LOAD
         public T Load<T>(bool encrypted = false)
         {
