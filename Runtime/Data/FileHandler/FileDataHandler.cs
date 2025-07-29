@@ -21,6 +21,7 @@ namespace DataEngine.Data
             m_path = path;
             m_filename = name;
             m_key = string.Empty;
+            m_serializer = new JsonSerializer();
         }
 
         public FileDataHandler(string path, string name, string key)

@@ -135,6 +135,8 @@ namespace DataEngine.Data
         {
             if (g_file != null)
             {
+                g_data = g_file.Load<SerializedData>();
+
                 return g_file.LoadRaw();
             }
             else
@@ -256,6 +258,11 @@ namespace DataEngine.Data
         #endregion
 
         #region FILES
+        public static bool Exists()
+        {
+            return g_file.Exists();
+        }
+
         public static void RemoveFile(string path, bool absolute = false)
         {
             string fullpath = Application.persistentDataPath + '/';
