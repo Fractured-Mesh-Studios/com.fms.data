@@ -40,7 +40,7 @@ namespace DataEngine.Data
             m_serializer = serializer;
         }
 
-        public void SetThreadLock(bool locked)
+        public void SetLock(bool locked)
         {
             share = locked ? FileShare.Read : FileShare.ReadWrite;
         }

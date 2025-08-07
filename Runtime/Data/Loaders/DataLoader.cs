@@ -49,7 +49,7 @@ namespace DataEngine.Data
         private static FileDataHandler g_file;
         private static string g_path;
 
-        public static void Initialize(string filename, bool threadLock = true)
+        public static void Initialize(string filename, bool @lock = true)
         {
             string path = string.Empty;
             switch (pathType)
@@ -66,11 +66,11 @@ namespace DataEngine.Data
 
             g_path = path;
             g_file = new FileDataHandler(path, name, key);
-            g_file.SetThreadLock(threadLock);
+            g_file.SetLock(@lock);
             g_data.Clear();
         }
 
-        public static void Initialize(string filename, string extension, bool threadLock = true)
+        public static void Initialize(string filename, string extension, bool @lock = true)
         {
             string path = string.Empty;
             switch (pathType)
@@ -87,11 +87,11 @@ namespace DataEngine.Data
 
             g_path = path;
             g_file = new FileDataHandler(path, name, key);
-            g_file.SetThreadLock(threadLock);
+            g_file.SetLock(@lock);
             g_data.Clear();
         }
 
-        public static void InitializePath(string path, bool threadLock = true)
+        public static void InitializePath(string path, bool @lock = true)
         {
             string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(path);
             string fileExtension = Path.GetExtension(path);
@@ -99,7 +99,7 @@ namespace DataEngine.Data
 
             g_path = path;
             g_file = new FileDataHandler(path, name, key);
-            g_file.SetThreadLock(threadLock);
+            g_file.SetLock(@lock);
             g_data.Clear();
         }
 

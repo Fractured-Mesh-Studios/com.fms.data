@@ -46,7 +46,7 @@ namespace DataEngine.Data
                 string filename = $"{name}.json";
 
                 m_file = new FileDataHandler(currentPath, filename, DataLoader.key);
-                m_file.SetThreadLock(true);
+                m_file.SetLock(true);
 
                 if (!m_file.Exists())
                 {
@@ -68,7 +68,7 @@ namespace DataEngine.Data
                 string filename = $"{name}.json";
 
                 m_file = new FileDataHandler(currentPath, filename, DataLoader.key);
-                m_file.SetThreadLock(true);
+                m_file.SetLock(true);
             }
             else
             {

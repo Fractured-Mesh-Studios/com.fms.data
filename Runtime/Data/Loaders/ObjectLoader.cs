@@ -89,7 +89,7 @@ namespace DataEngine.Data
             
             m_file = new FileDataHandler(path + folder, name, m_key);
             m_data = new SerializedData();
-            m_file.SetThreadLock(threadLock);
+            m_file.SetLock(threadLock);
         }
 
         private void OnLoad()
