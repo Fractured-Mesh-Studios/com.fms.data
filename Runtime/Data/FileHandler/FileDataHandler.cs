@@ -4,6 +4,7 @@ using UnityEngine;
 using DataEngine.Interfaces;
 using DataEngine.Data.Serializer;
 using Newtonsoft.Json.Linq;
+using System.Threading.Tasks;
 
 namespace DataEngine.Data
 {
@@ -15,6 +16,7 @@ namespace DataEngine.Data
         private ISerialization m_serializer;
         private FileShare share;
 
+        public string name => m_filename;
 
         public FileDataHandler(string path, string name)
         {
@@ -49,6 +51,46 @@ namespace DataEngine.Data
         {
             string fullPath = Path.Combine(m_path, m_filename);
             return File.Exists(fullPath);
+        }
+
+        public async Task<bool> IsFileLockedAsync(int retryCount = 3, int delayMilliseconds = 100)
+        {
+            string fullPath = Path.Combine(m_path, m_filename);
+            if (!File.Exists(fullPath))
+            {
+                return false;
+            }
+
+            return await Task.Run(async () =>
+            {
+                for (int i = 0; i < retryCount; i++)
+                {
+                    FileStream stream = null;
+                    try
+                    {
+                        stream = new FileStream(fullPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                        return false;
+                    }
+                    catch (IOException)
+                    {
+                        if (i == retryCount - 1)
+                            return true;
+
+                        await Task.Delay(delayMilliseconds);
+                    }
+                    catch (UnauthorizedAccessException ex)
+                    {
+                        Debug.LogError($"Access denied to the file due to insufficient permissions: {fullPath}\n{ex.Message}");
+                        return true;
+                    }
+                    finally
+                    {
+                        stream?.Close();
+                    }
+                }
+
+                return false;
+            });
         }
 
         #region LOAD
@@ -146,11 +188,17 @@ namespace DataEngine.Data
         #endregion
 
         #region SAVE
-        public void Save<T>(T data, bool encrypted = false) 
+        public async void Save<T>(T data, bool encrypted = false) 
         {
+            if (await IsFileLockedAsync()) 
+            {
+                return;
+            }
+
             string fullPath = Path.Combine(m_path, m_filename);
             try 
             {
+                
                 Directory.CreateDirectory(Path.GetDirectoryName(fullPath));
             
                 string dataToStore = m_serializer.Serialize(data);
@@ -177,8 +225,13 @@ namespace DataEngine.Data
             }
         }
 
-        public void SaveRaw(string data)
+        public async void SaveRaw(string data)
         {
+            if (await IsFileLockedAsync())
+            {
+                return;
+            }
+
             string fullPath = Path.Combine(m_path, m_filename);
             try
             {

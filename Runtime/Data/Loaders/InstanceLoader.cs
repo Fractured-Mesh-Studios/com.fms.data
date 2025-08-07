@@ -1,4 +1,5 @@
 using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,16 +8,16 @@ namespace DataEngine.Data
     [System.Serializable]
     public class SerializedData : Dictionary<object, object> { }
 
-
     [System.Serializable]
     public class InstanceLoader : ILoader
     {
-        [SerializeField] private string name = "loader";
+        [Tooltip("if leaved empty a name is generated")]
+        [SerializeField] private string name = string.Empty;
         [SerializeField] private DataLoader.DataLoaderPath m_pathType;
         [SerializeField] private bool encrypted;
 
         private FileDataHandler m_file;
-        private SerializedData m_data;
+        private SerializedData m_data = new SerializedData();
 
         #region Properties
         public string currentPath
@@ -41,20 +42,35 @@ namespace DataEngine.Data
         #region Load
         public void Load() 
         {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                Debug.LogError($"{GetType().Name} <name> field is empty or white space");
+                return;
+            }
+
             if (m_file == null)
             {
-                string filename = $"{name}.json";
-
-                m_file = new FileDataHandler(currentPath, filename, DataLoader.key);
+                m_file = new FileDataHandler(currentPath, $"{name}.json", DataLoader.key);
                 m_file.SetLock(true);
 
                 if (!m_file.Exists())
                 {
                     m_file.SaveRaw(string.Empty);
                 }
+                else
+                {
+                    m_data = m_file.Load<SerializedData>(encrypted);
+                }
             }
             else
             {
+                if (m_file.name != name)
+                {
+                    
+                    m_file = new FileDataHandler(currentPath, $"{name}.json", DataLoader.key);
+                    m_file.SetLock(true);
+                }
+
                 m_data = m_file.Load<SerializedData>(encrypted);
             }
         }
@@ -63,34 +79,53 @@ namespace DataEngine.Data
         #region Save
         public void Save() 
         {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                Debug.LogError($"{GetType().Name} <name> field is empty or white space");
+                return;
+            }
+
             if (m_file == null)
             {
-                string filename = $"{name}.json";
-
-                m_file = new FileDataHandler(currentPath, filename, DataLoader.key);
+                m_file = new FileDataHandler(currentPath, $"{name}.json", DataLoader.key);
                 m_file.SetLock(true);
+                m_file.Save(m_data, encrypted);
             }
             else
             {
+                if (m_file.name != name)
+                {
+                    m_file = new FileDataHandler(currentPath, $"{name}.json", DataLoader.key);
+                    m_file.SetLock(true);
+                }
+
                 m_file.Save(m_data, encrypted);
             }
         }
         #endregion
 
+        public void Clear()
+        {
+            m_data.Clear();
+            m_file = null;
+            name = string.Empty;
+        }
+
         #region KeyHandling
         public object this[object key]
         {
-            set { m_data[key] = value; }
-            get { return m_data[key]; }
+            set 
+            {
+                m_data[key] = value; 
+            }
+            get 
+            {
+                return m_data[key];
+            }
         }
 
         public void AddKey(object key, object value)
         {
-            if(m_data == null)
-            {
-                m_data = new SerializedData();
-            }
-
             m_data.Add(key, value);
         }
 
@@ -111,7 +146,7 @@ namespace DataEngine.Data
 
         public T CastKey<T>(object key)
         {
-            if(m_data == null || m_data.Count <= 0)
+            if(m_data.Count <= 0)
             {
                 Load();
             }

@@ -8,7 +8,6 @@ using UnityEngine;
 
 using DataEngine.Data;
 using DataEngine.Window;
-using static PlasticPipe.Server.MonitorStats;
 
 namespace DataEditor.Window
 {
