@@ -103,6 +103,12 @@ namespace DataEngine.Data
             g_data.Clear();
         }
 
+        public static void Deinitialize()
+        {
+            g_file = null;
+            g_data.Clear();
+        }
+
         #region LOAD
         public static T Load<T>(string key)
         {
