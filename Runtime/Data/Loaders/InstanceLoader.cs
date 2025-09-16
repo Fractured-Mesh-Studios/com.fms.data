@@ -39,6 +39,12 @@ namespace DataEngine.Data
         }
         #endregion
 
+        public InstanceLoader(string filename)
+        {
+            this.name = filename;
+        }
+
+
         #region Load
         public void Load() 
         {
