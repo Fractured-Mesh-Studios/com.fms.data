@@ -12,14 +12,26 @@ namespace DataEngine.Data
     public class InstanceLoader : ILoader
     {
         [Tooltip("if leaved empty a name is generated")]
-        [SerializeField] private string name = string.Empty;
+        [SerializeField] private string m_name = string.Empty;
         [SerializeField] private DataLoader.DataLoaderPath m_pathType;
-        [SerializeField] private bool encrypted;
+        [SerializeField] private bool m_encrypted;
 
         private FileDataHandler m_file;
         private SerializedData m_data = new SerializedData();
 
         #region Properties
+        public DataLoader.DataLoaderPath pathType 
+        {
+            set { m_pathType = value; } 
+            get { return m_pathType; } 
+        }
+
+        public bool encrypted
+        {
+            get { return m_encrypted; }
+            set { m_encrypted = value; }
+        }
+
         public string currentPath
         {
             get
@@ -41,14 +53,14 @@ namespace DataEngine.Data
 
         public InstanceLoader(string filename)
         {
-            this.name = filename;
+            this.m_name = filename;
         }
 
 
         #region Load
         public void Load() 
         {
-            if (string.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrWhiteSpace(m_name))
             {
                 Debug.LogError($"{GetType().Name} <name> field is empty or white space");
                 return;
@@ -56,7 +68,7 @@ namespace DataEngine.Data
 
             if (m_file == null)
             {
-                m_file = new FileDataHandler(currentPath, $"{name}.json", DataLoader.key);
+                m_file = new FileDataHandler(currentPath, $"{m_name}.json", DataLoader.key);
                 m_file.SetLock(true);
 
                 if (!m_file.Exists())
@@ -65,19 +77,19 @@ namespace DataEngine.Data
                 }
                 else
                 {
-                    m_data = m_file.Load<SerializedData>(encrypted);
+                    m_data = m_file.Load<SerializedData>(m_encrypted);
                 }
             }
             else
             {
-                if (m_file.name != name)
+                if (m_file.name != m_name)
                 {
                     
-                    m_file = new FileDataHandler(currentPath, $"{name}.json", DataLoader.key);
+                    m_file = new FileDataHandler(currentPath, $"{m_name}.json", DataLoader.key);
                     m_file.SetLock(true);
                 }
 
-                m_data = m_file.Load<SerializedData>(encrypted);
+                m_data = m_file.Load<SerializedData>(m_encrypted);
             }
         }
         #endregion
@@ -85,7 +97,7 @@ namespace DataEngine.Data
         #region Save
         public void Save() 
         {
-            if (string.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrWhiteSpace(m_name))
             {
                 Debug.LogError($"{GetType().Name} <name> field is empty or white space");
                 return;
@@ -93,20 +105,30 @@ namespace DataEngine.Data
 
             if (m_file == null)
             {
-                m_file = new FileDataHandler(currentPath, $"{name}.json", DataLoader.key);
+                m_file = new FileDataHandler(currentPath, $"{m_name}.json", DataLoader.key);
                 m_file.SetLock(true);
-                m_file.Save(m_data, encrypted);
+                m_file.Save(m_data, m_encrypted);
             }
             else
             {
-                if (m_file.name != name)
+                if (m_file.name != m_name)
                 {
-                    m_file = new FileDataHandler(currentPath, $"{name}.json", DataLoader.key);
+                    m_file = new FileDataHandler(currentPath, $"{m_name}.json", DataLoader.key);
                     m_file.SetLock(true);
                 }
 
-                m_file.Save(m_data, encrypted);
+                m_file.Save(m_data, m_encrypted);
             }
+        }
+        #endregion
+
+        #region Exits
+        public bool Exists()
+        {
+            m_file = new FileDataHandler(currentPath, $"{m_name}.json", DataLoader.key);
+            m_file.SetLock(true);
+
+            return m_file.Exists();
         }
         #endregion
 
@@ -114,7 +136,7 @@ namespace DataEngine.Data
         {
             m_data.Clear();
             m_file = null;
-            name = string.Empty;
+            m_name = string.Empty;
         }
 
         #region KeyHandling
