@@ -58,7 +58,7 @@ namespace DataEngine.Data
 
 
         #region Load
-        public void Load() 
+        public void Load(bool locked = true) 
         {
             if (string.IsNullOrWhiteSpace(m_name))
             {
@@ -69,7 +69,7 @@ namespace DataEngine.Data
             if (m_file == null)
             {
                 m_file = new FileDataHandler(currentPath, $"{m_name}.json", DataLoader.key);
-                m_file.SetLock(true);
+                m_file.SetLock(locked);
 
                 if (!m_file.Exists())
                 {
@@ -86,7 +86,7 @@ namespace DataEngine.Data
                 {
                     
                     m_file = new FileDataHandler(currentPath, $"{m_name}.json", DataLoader.key);
-                    m_file.SetLock(true);
+                    m_file.SetLock(locked);
                 }
 
                 m_data = m_file.Load<SerializedData>(m_encrypted);
@@ -95,7 +95,7 @@ namespace DataEngine.Data
         #endregion
 
         #region Save
-        public void Save() 
+        public void Save(bool locked = true) 
         {
             if (string.IsNullOrWhiteSpace(m_name))
             {
@@ -106,7 +106,7 @@ namespace DataEngine.Data
             if (m_file == null)
             {
                 m_file = new FileDataHandler(currentPath, $"{m_name}.json", DataLoader.key);
-                m_file.SetLock(true);
+                m_file.SetLock(locked);
                 m_file.Save(m_data, m_encrypted);
             }
             else
@@ -114,7 +114,7 @@ namespace DataEngine.Data
                 if (m_file.name != m_name)
                 {
                     m_file = new FileDataHandler(currentPath, $"{m_name}.json", DataLoader.key);
-                    m_file.SetLock(true);
+                    m_file.SetLock(locked);
                 }
 
                 m_file.Save(m_data, m_encrypted);
@@ -174,14 +174,30 @@ namespace DataEngine.Data
 
         public T CastKey<T>(object key)
         {
-            if(m_data.Count <= 0)
-            {
+            if (m_data.Count <= 0)
                 Load();
+
+            var value = m_data[key];
+
+            // Si el tipo esperado es string, devolvemos directo
+            if (typeof(T) == typeof(string))
+            {
+                return (T)value;
             }
 
-            JObject @object = (JObject)m_data[key];
+            // Si el tipo esperado es byte[] y el valor es Base64
+            if (typeof(T) == typeof(byte[]) && value is string s)
+            {
+                return (T)(object)Convert.FromBase64String(s);
+            }
 
-            return @object.ToObject<T>();
+            // Si es JObject
+            if (value is JObject jObj)
+            {
+                return jObj.ToObject<T>();
+            }
+
+            throw new InvalidCastException($"No se puede castear el valor de tipo {value.GetType()} a {typeof(T)}");
         }
 
         public SerializedData GetData()
