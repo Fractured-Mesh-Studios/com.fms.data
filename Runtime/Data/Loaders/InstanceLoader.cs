@@ -123,10 +123,10 @@ namespace DataEngine.Data
         #endregion
 
         #region Exits
-        public bool Exists()
+        public bool Exists(bool locked = true)
         {
             m_file = new FileDataHandler(currentPath, $"{m_name}.json", DataLoader.key);
-            m_file.SetLock(true);
+            m_file.SetLock(locked);
 
             return m_file.Exists();
         }
